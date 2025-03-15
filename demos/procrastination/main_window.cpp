@@ -11,7 +11,6 @@ MainWindow::~MainWindow() {}
 void MainWindow::setupUi() {
     QWidget *centralWidget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(centralWidget);
-
     countSpinBox = new QSpinBox(this);
     countSpinBox->setRange(1, 101);
     countSpinBox->setValue(20);
@@ -55,7 +54,6 @@ void MainWindow::setupUi() {
     layout->addWidget(questionView);
 
     setCentralWidget(centralWidget);
-
     QObject::connect(countSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
                      [this](int count) { updateTicketList(count); });
     QObject::connect(viewList, &QListWidget::itemClicked,

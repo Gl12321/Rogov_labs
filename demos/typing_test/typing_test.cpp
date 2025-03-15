@@ -4,7 +4,7 @@ TypingTest::TypingTest(QWidget *parent) : QMainWindow(parent) {
     setupUi();
     resize(500, 300);
     testRunning = false;
-    sampleText = QStringLiteral("Разработка программного обеспечения для космических исследований открывает новые горизонты в изучении Вселенной. Современные технологии позволяют создавать сложные системы управления спутниками, анализировать данные с телескопов и моделировать полёты на Марс. Программисты и инженеры вместе работают над тем, чтобы человечество могло прикоснуться к звёздам.");
+    sampleText = QStringLiteral("Это тест скорости печати на русском языке");
     currentPosition = 0;
     errorCount = 0;
     bestCPM = 0;
@@ -25,7 +25,6 @@ TypingTest::~TypingTest() {}
 void TypingTest::setupUi() {
     QWidget *centralWidget = new QWidget(this);
     QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
-
     sampleLabel = new QLabel(sampleText, this);
     sampleLabel->setAlignment(Qt::AlignCenter);
     sampleLabel->setWordWrap(true);
@@ -56,22 +55,20 @@ void TypingTest::setupUi() {
     mainLayout->addWidget(errorLabel);
     mainLayout->addWidget(statsLabel);
     mainLayout->addStretch();
-
     setCentralWidget(centralWidget);
 }
-
 void TypingTest::startTest() {
     if (!testRunning) {
         testRunning = true;
         inputLine->clear();
         inputLine->setFocus();
         inputLine->setStyleSheet("");
-        resultLabel->setText("Печатай!");
+        resultLabel->setText("");
         errorCount = 0;
         errorLabel->setText("Ошибки: 0");
         elapsed->start();
         timer->start(100);
-        startButton->setText("Тест идет...");
+        startButton->setText("");
         startButton->setEnabled(false);
         currentPosition = 0;
     }
@@ -85,11 +82,9 @@ void TypingTest::checkInput(const QString &text) {
         inputLine->setStyleSheet("");
         return;
     }
-
     if (text.length() > currentPosition) {
         QChar inputChar = text[currentPosition];
         QChar expectedChar = sampleText[currentPosition];
-
         if (inputChar == expectedChar) {
             currentPosition++;
             inputLine->setStyleSheet("");
@@ -106,20 +101,18 @@ void TypingTest::checkInput(const QString &text) {
             }
         } else {
             inputLine->setText(text.left(currentPosition));
-            inputLine->setStyleSheet("background-color: pink;");
+            inputLine->setStyleSheet("background-color: red;");
             errorCount++;
             errorLabel->setText(QString("Ошибки: %1").arg(errorCount));
         }
     }
 }
-
 void TypingTest::updateTime() {
     if (testRunning) {
         double timeInSeconds = elapsed->elapsed() / 1000.0;
         resultLabel->setText(QString("Время: %1 сек").arg(timeInSeconds, 0, 'f', 1));
     }
 }
-
 void TypingTest::updateStats() {
     if (currentCPM > bestCPM) {
         bestCPM = currentCPM;
