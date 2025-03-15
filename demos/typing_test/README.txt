@@ -3,3 +3,4 @@
   После теста показывает твой результат, прошлый и лучший на statsLabel,
  с кнопкой startButton для старта,
  всё это в mainLayout и inputLayout.
+ 
