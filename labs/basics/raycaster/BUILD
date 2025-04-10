@@ -1,11 +1,14 @@
 load("@rules_qt//:qt.bzl", "qt_cc_binary")
 
 qt_cc_binary(
-    name = "typing_test",
+    name = "raycaster",
     srcs = [
         "main.cpp",
-        "typing_test.cpp",
-        "typing_test.h",
+        "mainwindow.h",
+        "mainwindow.cpp",
+        "ray.h",
+        "polygon.h",
+        "controller.h",
     ],
     deps = [
         "@rules_qt//:qt_core",
