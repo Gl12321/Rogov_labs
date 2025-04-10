@@ -30,16 +30,18 @@ void MainWindow::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    Polygon lightArea = controller_.CreateLightArea();
-    std::vector<QPointF> lightVertices = lightArea.getVertices();
-    if (!lightVertices.empty()) {
-        std::vector<QPoint> points;
-        for (const QPointF& vertex : lightVertices) {
-            points.push_back(vertex.toPoint());
+    for (const QPointF& source : controller_.getLightSources()) {
+        Polygon lightArea = controller_.CreateLightArea(source);
+        std::vector<QPointF> lightVertices = lightArea.getVertices();
+        if (!lightVertices.empty()) {
+            std::vector<QPoint> points;
+            for (const QPointF& vertex : lightVertices) {
+                points.push_back(vertex.toPoint());
+            }
+            painter.setBrush(QColor(255, 255, 200, 50));
+            painter.setPen(Qt::NoPen);
+            painter.drawPolygon(points.data(), points.size());
         }
-        painter.setBrush(QColor(255, 255, 200, 100)); // Полупрозрачный жёлтый
-        painter.setPen(Qt::NoPen);
-        painter.drawPolygon(points.data(), points.size());
     }
 
     painter.setPen(Qt::black);
@@ -52,8 +54,10 @@ void MainWindow::paintEvent(QPaintEvent *event) {
     }
 
     if (currentMode_ == LIGHT) {
-        painter.setBrush(Qt::yellow);
-        painter.drawEllipse(controller_.getLightSource(), 5, 5);
+        for (const QPointF& source : controller_.getLightSources()) {
+            painter.setBrush(Qt::yellow);
+            painter.drawEllipse(source, 3, 3);
+        }
     }
 }
 

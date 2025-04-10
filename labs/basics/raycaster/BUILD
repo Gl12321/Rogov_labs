@@ -8,6 +8,7 @@ qt_cc_binary(
         "mainwindow.h",
         "ray.h",
         "polygon.h",
+        "polygon.cpp",
         "controller.h",
         "controller.cpp",
     ],

@@ -2,17 +2,50 @@
 #include <algorithm>
 #include <cmath>
 
+Controller::Controller() : light_source_(0, 0) {
+    light_sources_.resize(7);
+    const double radius = 20.0;
+    for (int i = 0; i < 7; ++i) {
+        double angle = 2.0 * M_PI * i / 7.0;
+        light_sources_[i] = light_source_ + QPointF(radius * std::cos(angle), radius * std::sin(angle));
+    }
+}
+
+void Controller::setLightSource(const QPointF& source) {
+    light_source_ = source;
+    light_sources_.resize(7);
+    const double radius = 20.0;
+    for (int i = 0; i < 7; ++i) {
+        double angle = 2.0 * M_PI * i / 7.0;
+        light_sources_[i] = light_source_ + QPointF(radius * std::cos(angle), radius * std::sin(angle));
+    }
+}
+
+void Controller::AddVertexToLastPolygon(const QPointF& new_vertex) {
+    if (!polygons_.empty()) {
+        polygons_.back().AddVertex(new_vertex);
+    }
+}
+
+void Controller::UpdateLastPolygon(const QPointF& new_vertex) {
+    if (!polygons_.empty()) {
+        polygons_.back().UpdateLastVertex(new_vertex);
+    }
+}
+
 std::vector<Ray> Controller::CastRays() {
     std::vector<Ray> rays;
-    for (const Polygon& poly : polygons_) {
-        for (const QPointF& vertex : poly.getVertices()) {
-            double dx = vertex.x() - light_source_.x();
-            double dy = vertex.y() - light_source_.y();
-            double angle = std::atan2(dy, dx);
+    for (const QPointF& source : light_sources_) {
+        for (const Polygon& poly : polygons_) {
+            for (const QPointF& vertex : poly.getVertices()) {
+                double dx = vertex.x() - source.x();
+                double dy = vertex.y() - source.y();
+                double angle = std::atan2(dy, dx);
 
-            rays.push_back(Ray(light_source_, vertex, angle));
-            rays.push_back(Ray(light_source_, vertex, angle).Rotate(0.0001));
-            rays.push_back(Ray(light_source_, vertex, angle).Rotate(-0.0001));
+                rays.push_back(Ray(source, vertex, angle));
+                rays.push_back(Ray(source, vertex, angle).Rotate(0.0001));
+                rays.push_back(Ray(source, vertex, angle).Rotate(-0.0001));
+            }
         }
     }
     return rays;
@@ -54,7 +87,7 @@ void Controller::RemoveAdjacentRays(std::vector<Ray>* rays) {
     std::vector<Ray> filteredRays;
     filteredRays.push_back((*rays)[0]);
 
-    const double threshold = 2.0; 
+    const double threshold = 2.0;
     for (size_t i = 1; i < rays->size(); ++i) {
         QPointF lastEnd = filteredRays.back().getEnd();
         QPointF currentEnd = (*rays)[i].getEnd();
@@ -68,8 +101,19 @@ void Controller::RemoveAdjacentRays(std::vector<Ray>* rays) {
     *rays = filteredRays;
 }
 
-Polygon Controller::CreateLightArea() {
-    std::vector<Ray> rays = CastRays();
+Polygon Controller::CreateLightArea(const QPointF& source) {
+    std::vector<Ray> rays;
+    for (const Polygon& poly : polygons_) {
+        for (const QPointF& vertex : poly.getVertices()) {
+            double dx = vertex.x() - source.x();
+            double dy = vertex.y() - source.y();
+            double angle = std::atan2(dy, dx);
+
+            rays.push_back(Ray(source, vertex, angle));
+            rays.push_back(Ray(source, vertex, angle).Rotate(0.0001));
+            rays.push_back(Ray(source, vertex, angle).Rotate(-0.0001));
+        }
+    }
 
     IntersectRays(&rays);
 
