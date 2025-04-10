@@ -8,21 +8,21 @@
 
 class MainWindow : public QMainWindow {
 public:
-    MainWindow(QWidget* parent = nullptr);
+    MainWindow(QWidget *parent = nullptr);
 
 protected:
-    void paintEvent(QPaintEvent* event) override;
-    void mousePressEvent(QMouseEvent* event) override;
-    void mouseMoveEvent(QMouseEvent* event) override;
+    void paintEvent(QPaintEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
 
 private:
-    void updateMode(int index);
+    void modeChanged(int index);
 
     Controller controller_;
-    QComboBox* mode_selector_;
-    QWidget* drawing_area_;
-    enum Mode { LIGHT, POLYGONS } mode_;
-    bool drawing_polygon_;
+    QComboBox *modeSelector_;
+    QWidget *drawArea_;
+    bool drawingPolygon_;
+    enum Mode { LIGHT, POLYGONS } currentMode_;
 };
 
 #endif

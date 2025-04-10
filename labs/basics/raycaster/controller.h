@@ -1,83 +1,38 @@
-#include "mainwindow.h"
-#include <QtWidgets/QVBoxLayout>
-#include <QPainter>
-#include <QMouseEvent>
+#ifndef CONTROLLER_H
+#define CONTROLLER_H
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), mode_(LIGHT), drawing_polygon_(false) {
-    QWidget* central_widget = new QWidget(this);
-    QVBoxLayout* layout = new QVBoxLayout(central_widget);
-    mode_selector_ = new QComboBox(this);
-    mode_selector_->addItem("Light");
-    mode_selector_->addItem("Polygons");
-    drawing_area_ = new QWidget(this);
-    drawing_area_->setMinimumSize(800, 600);
-    layout->addWidget(mode_selector_);
-    layout->addWidget(drawing_area_);
-    setCentralWidget(central_widget);
+#include <vector>
+#include "polygon.h"
+#include "ray.h"
 
-    std::vector<QPoint> boundary = {QPoint(0, 0), QPoint(800, 0), QPoint(800, 600), QPoint(0, 600)};
-    controller_.AddPolygon(Polygon(boundary));
+class Controller {
+public:
+    Controller() : light_source_(0, 0) {}
 
-    QObject::connect(mode_selector_, QOverload<int>::of(&QComboBox::currentIndexChanged),
-                     this, &MainWindow::updateMode);
-}
-
-void MainWindow::paintEvent(QPaintEvent* event) {
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
-
-    if (mode_ == LIGHT) {
-        Polygon light_area = controller_.CreateLightArea();
-        painter.setBrush(QColor(255, 255, 0, 50));
-        painter.setPen(Qt::NoPen);
-        for (size_t i = 0; i < light_area.getVertices().size(); ++i) {
-            QPoint p1 = light_area.getVertices()[i];
-            QPoint p2 = light_area.getVertices()[(i + 1) % light_area.getVertices().size()];
-            painter.drawLine(p1, p2);
-        }
-        painter.setBrush(Qt::yellow);
-        painter.drawEllipse(controller_.getLightSource(), 5, 5);
-    }
-
-    painter.setPen(Qt::black);
-    painter.setBrush(Qt::NoBrush);
-    for (const auto& poly : controller_.GetPolygons()) {
-        for (size_t i = 0; i < poly.getVertices().size(); ++i) {
-            QPoint p1 = poly.getVertices()[i];
-            QPoint p2 = poly.getVertices()[(i + 1) % poly.getVertices().size()];
-            painter.drawLine(p1, p2);
+    const std::vector<Polygon>& GetPolygons() const { return polygons_; }
+    void AddPolygon(const Polygon& polygon) { polygons_.push_back(polygon); }
+    void AddVertexToLastPolygon(const QPointF& new_vertex) {
+        if (!polygons_.empty()) {
+            polygons_.back().AddVertex(new_vertex);
         }
     }
-}
-
-void MainWindow::mousePressEvent(QMouseEvent* event) {
-    if (mode_ == POLYGONS) {
-        if (event->button() == Qt::LeftButton) {
-            if (!drawing_polygon_) {
-                controller_.AddPolygon(Polygon({event->pos()}));
-                drawing_polygon_ = true;
-            } else {
-                controller_.AddVertexToLastPolygon(event->pos());
-            }
-            update();
-        } else if (event->button() == Qt::RightButton) {
-            drawing_polygon_ = false;
+    void UpdateLastPolygon(const QPointF& new_vertex) {
+        if (!polygons_.empty()) {
+            polygons_.back().UpdateLastVertex(new_vertex);
         }
     }
-}
 
-void MainWindow::mouseMoveEvent(QMouseEvent* event) {
-    if (mode_ == LIGHT) {
-        controller_.setLightSource(event->pos());
-        update();
-    } else if (mode_ == POLYGONS && drawing_polygon_) {
-        controller_.UpdateLastPolygon(event->pos());
-        update();
-    }
-}
+    QPointF getLightSource() const { return light_source_; }
+    void setLightSource(const QPointF& source) { light_source_ = source; }
 
-void MainWindow::updateMode(int index) {
-    mode_ = (index == 0) ? LIGHT : POLYGONS;
-    drawing_polygon_ = false;
-    update();
-}
+    std::vector<Ray> CastRays();
+    void IntersectRays(std::vector<Ray>* rays);
+    void RemoveAdjacentRays(std::vector<Ray>* rays);
+    Polygon CreateLightArea();
+
+private:
+    std::vector<Polygon> polygons_;
+    QPointF light_source_;
+};
+
+#endif

@@ -4,11 +4,12 @@ qt_cc_binary(
     name = "raycaster",
     srcs = [
         "main.cpp",
-        "mainwindow.h",
         "mainwindow.cpp",
+        "mainwindow.h",
         "ray.h",
         "polygon.h",
         "controller.h",
+        "controller.cpp",
     ],
     deps = [
         "@rules_qt//:qt_core",
